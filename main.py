@@ -11,11 +11,12 @@ import argparse
 from model import Unet
 import train
 from torchvision import transforms
-
+from data.dataset import get_loader
 
 parser = argparse.ArgumentParser(description='Model configuration')
 parser.add_argument('--config', default='configs\example.yaml')
 
+_CSV_FILE_ = './data/image_pairs'
 
 def main():
     global args
@@ -32,27 +33,14 @@ def main():
     else:
         device = torch.device('cpu')
         print('CPU only!')
-
-   
+    
+    
     # step 1: data   
     # get data loader
     train_data, val_data, test_data = None, None, None
-
-    train_loader, train_data = get_loader(data_dir=config['data_dir'], aux_data_dir=config['aux_data_dir'],
-                                          split='train',
-                                          maxseqlen=15, maxnuminstrs=10, maxnumlabels=20, maxnumims=5,
-                                          transform=transform, batch_size=config['batch_size'], shuffle=True,
-                                          num_workers=1, drop_last=False, max_num_samples=-1, use_lmdb=False, suff='')
-
-    val_loader, val_data = get_loader(data_dir=config['data_dir'], aux_data_dir=config['aux_data_dir'], split='val',
-                                      maxseqlen=15, maxnuminstrs=10, maxnumlabels=20, maxnumims=5,
-                                      transform=transform, batch_size=config['batch_size'], shuffle=False,
-                                      num_workers=1, drop_last=False, max_num_samples=-1, use_lmdb=False, suff='')
-
-    test_loader, test_data = get_loader(data_dir=config['data_dir'], aux_data_dir=config['aux_data_dir'], split='test',
-                                        maxseqlen=15, maxnuminstrs=10, maxnumlabels=20, maxnumims=5,
-                                        transform=transform, batch_size=config['batch_size'], shuffle=False,
-                                        num_workers=1, drop_last=False, max_num_samples=-1, use_lmdb=False, suff='')
+    train_loader, train_data = get_loader(data_dir=config['data_dir'], csv_file=_CSV_FILE_, split='train', batch_size=config['batch_size'],shuffle=True, num_workers=8,max_num_samples=-1)
+    val_loader, val_data = get_loader(data_dir=config['data_dir'], csv_file=_CSV_FILE_, split='val', batch_size=config['batch_size'],shuffle=True, num_workers=8,max_num_samples=-1)
+    test_loader, test_data = get_loader(data_dir=config['data_dir'], csv_file=_CSV_FILE_, split='test', batch_size=config['batch_size'],shuffle=True, num_workers=8,max_num_samples=-1)
 
     print("Training samples: ", len(train_data))
     print("Validation samples: ", len(val_data))
@@ -81,7 +69,6 @@ def main():
     # step 4: training
     print('\n start training! \n')
     time.sleep(1)
-    ei = torch.randn(config['batch_size'], config['embed_size'], 49) # image feature
     with tqdm(range(config['max_epoch'])) as t:
         for epoch in t:
             t.set_description('Epoch:{}'.format(epoch))
