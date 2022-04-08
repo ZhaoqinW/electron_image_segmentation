@@ -16,7 +16,9 @@ from data.dataset import get_loader
 parser = argparse.ArgumentParser(description='Model configuration')
 parser.add_argument('--config', default='configs\example.yaml')
 
-_CSV_FILE_ = './data/image_pairs'
+_CSV_FILE_TRAIN_ = './data/image_pairs.csv'
+_CSV_FILE_VAL_ = './data/image_pairs.csv'
+_CSV_FILE_TEST_= './data/image_pairs.csv'
 
 def main():
     global args
@@ -38,9 +40,9 @@ def main():
     # step 1: data   
     # get data loader
     train_data, val_data, test_data = None, None, None
-    train_loader, train_data = get_loader(data_dir=config['data_dir'], csv_file=_CSV_FILE_, split='train', batch_size=config['batch_size'],shuffle=True, num_workers=8,max_num_samples=-1)
-    val_loader, val_data = get_loader(data_dir=config['data_dir'], csv_file=_CSV_FILE_, split='val', batch_size=config['batch_size'],shuffle=True, num_workers=8,max_num_samples=-1)
-    test_loader, test_data = get_loader(data_dir=config['data_dir'], csv_file=_CSV_FILE_, split='test', batch_size=config['batch_size'],shuffle=True, num_workers=8,max_num_samples=-1)
+    train_loader, train_data = get_loader(data_dir=config['data_dir'], csv_file=_CSV_FILE_TRAIN_, split='train', batch_size=config['batch_size'],shuffle=True, num_workers=8,max_num_samples=-1)
+    val_loader, val_data = get_loader(data_dir=config['data_dir'], csv_file=_CSV_FILE_VAL_, split='val', batch_size=config['batch_size'],shuffle=True, num_workers=8,max_num_samples=-1)
+    test_loader, test_data = get_loader(data_dir=config['data_dir'], csv_file=_CSV_FILE_TEST_, split='test', batch_size=config['batch_size'],shuffle=True, num_workers=8,max_num_samples=-1)
 
     print("Training samples: ", len(train_data))
     print("Validation samples: ", len(val_data))
@@ -53,7 +55,7 @@ def main():
         raise ValueError('Invalid model name !')
 
 
-    train_epoch = getattr(train, 'Train' + config['model_name'])()
+    train_epoch = getattr(train, 'Train')()
     model.to(device)
 
     print('network structure is shown:\n\n{}'.format(model))

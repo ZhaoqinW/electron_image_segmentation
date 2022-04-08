@@ -6,16 +6,24 @@ import torch.nn as nn
 
 def double_conv(in_channels, out_channels):
     return nn.Sequential(
-        nn.Conv2d(in_channels, out_channels, 3, padding='same'),
+        nn.Conv2d(in_channels, out_channels, 3, padding=1),
         nn.ReLU(inplace=True),
-        nn.Conv2d(out_channels, out_channels, 3, padding='same'),
-        nn.ReLU(inplace=True)
-    )   
+        nn.Conv2d(out_channels, out_channels, 3, padding=1),
+        nn.ReLU(inplace=True))   
+
+def dice_loss(pred, target, smooth = 1.):
+    pred = pred.contiguous()
+    target = target.contiguous()    
+    intersection = (pred * target).sum(dim=2).sum(dim=2)
+    loss = (1 - ((2. * intersection + smooth) / (pred.sum(dim=2).sum(dim=2) + target.sum(dim=2).sum(dim=2) + smooth)))
+    return loss.mean()
 
 
 class Unet(nn.Module):
     def __init__(self,n_class):
-        self.dconv_down1 = double_conv(3, 64)
+        super().__init__()
+        
+        self.dconv_down1 = double_conv(1, 64)
         self.dconv_down2 = double_conv(64, 128)
         self.dconv_down3 = double_conv(128, 256)
         self.dconv_down4 = double_conv(256, 512)        
@@ -60,5 +68,4 @@ class Unet(nn.Module):
         return out
     
     def loss(self, predicted, target):
-        ln = nn.CrossEntropyLoss()
-        return ln(predicted, target)
+        return dice_loss(predicted, target)

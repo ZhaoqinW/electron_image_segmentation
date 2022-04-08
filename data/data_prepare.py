@@ -19,5 +19,5 @@ for f in whole_images:
     record.append([f,truth])
 
 data = pd.DataFrame(record)
-data.columns = ['image','truth']
+data.columns = ['image','target']
 data.to_csv('image_pairs.csv',index=False)
