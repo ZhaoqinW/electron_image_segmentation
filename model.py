@@ -11,12 +11,10 @@ def double_conv(in_channels, out_channels):
         nn.Conv2d(out_channels, out_channels, 3, padding=1),
         nn.ReLU(inplace=True))   
 
-def dice_loss(pred, target, smooth = 1.):
-    pred = pred.contiguous()
-    target = target.contiguous()    
-    intersection = (pred * target).sum(dim=2).sum(dim=2)
-    loss = (1 - ((2. * intersection + smooth) / (pred.sum(dim=2).sum(dim=2) + target.sum(dim=2).sum(dim=2) + smooth)))
-    return loss.mean()
+def dice_loss(pred, target):
+    numerator = 2 * torch.sum(pred * target)
+    denominator = torch.sum(pred + target)
+    return 1 - (numerator + 1) / (denominator + 1)
 
 
 class Unet(nn.Module):
@@ -68,4 +66,5 @@ class Unet(nn.Module):
         return out
     
     def loss(self, predicted, target):
+        predicted = torch.argmax(predicted,dim=1,keepdim=True)
         return dice_loss(predicted, target)

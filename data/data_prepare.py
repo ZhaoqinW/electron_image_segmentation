@@ -7,9 +7,9 @@ from PIL import Image
 
 file_dir = './image_toy'
 
-suffix = '_whole.hdf'
+suffix = '_image.hdf'
 file_list = os.listdir(file_dir)
-truth_suffix = '_whole_seg.hdf'
+truth_suffix = '_densegranule.hdf'
 
 whole_images = [f for f in file_list if f.endswith(suffix)]
 record = []

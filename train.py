@@ -2,6 +2,7 @@ import numpy as np
 import os
 import torch
 import time
+from torch.autograd import Variable
 
 """
 functions in class for trianing model in single epoch (simplify the main.py)
@@ -19,6 +20,7 @@ class Train(object):
             optimizer.zero_grad()
             predicts = model(img_inputs)
             loss = model.loss(predicts, target)
+            loss = Variable(loss, requires_grad = True)
             loss.backward()
             optimizer.step()
             epoch_loss_plus = loss.detach().item()
