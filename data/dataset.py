@@ -25,6 +25,8 @@ class ImgDataset(Dataset):
         self.image_path = image_path
         self.csv_map = csv_file
         self.df = pd.read_csv(csv_file)
+        self.targets_dtype = torch.long
+        self.inputs_dtype = torch.float32
 
     def __len__(self):
         return len(self.df)
@@ -34,8 +36,8 @@ class ImgDataset(Dataset):
         target_path = os.path.join(self.image_path,self.df.iloc[idx,]['target'])
         image = hdf_2_array(img_path)
         target = hdf_2_array(target_path)
-        image = torch.from_numpy(image)
-        target= torch.from_numpy(target)
+        image = torch.from_numpy(image).type(self.inputs_dtype)
+        target= torch.from_numpy(target).type(self.targets_dtype)
         #need revisit 
         image = torch.reshape(image, [1,960,960])
         target = torch.reshape(target, [1,960,960])

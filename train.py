@@ -19,8 +19,7 @@ class Train(object):
             target = target.to(device)
             optimizer.zero_grad()
             predicts = model(img_inputs)
-            loss = model.loss(predicts, target)
-            loss = Variable(loss, requires_grad = True)
+            loss = model.loss(predicts, target,device)
             loss.backward()
             optimizer.step()
             epoch_loss_plus = loss.detach().item()
@@ -42,7 +41,7 @@ class Train(object):
                 img_inputs = img_inputs.to(device)
                 target = target.to(device)
                 predicts = model(img_inputs)
-                loss = model.loss(predicts, target)
+                loss = model.loss(predicts, target,device)
 
                 epoch_test_loss += loss.detach().item()
 

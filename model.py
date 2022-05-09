@@ -2,6 +2,8 @@
 # Unet for biomedical image: https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+from torch.autograd import Variable
 
 
 def double_conv(in_channels, out_channels):
@@ -14,8 +16,20 @@ def double_conv(in_channels, out_channels):
 def dice_loss(pred, target):
     numerator = 2 * torch.sum(pred * target)
     denominator = torch.sum(pred + target)
-    return 1 - (numerator + 1) / (denominator + 1)
+    loss = 1 - (numerator + 1) / (denominator + 1)
+    return loss
 
+class diceloss(torch.nn.Module):
+    def init(self):
+        super(diceLoss, self).init()
+    def forward(self,pred, target):
+        smooth = 1.
+        iflat = pred.contiguous().view(-1)
+        tflat = target.contiguous().view(-1)
+        intersection = (iflat * tflat).sum()
+        A_sum = torch.sum(iflat * iflat)
+        B_sum = torch.sum(tflat * tflat)
+        return 1 - ((2. * intersection + smooth) / (A_sum + B_sum + smooth) )
 
 class Unet(nn.Module):
     def __init__(self,n_class):
@@ -65,6 +79,13 @@ class Unet(nn.Module):
 
         return out
     
-    def loss(self, predicted, target):
-        predicted = torch.argmax(predicted,dim=1,keepdim=True)
-        return dice_loss(predicted, target)
+    def loss(self, predicted, target,device):
+        #predicted = torch.softmax(predicted,dim=1)[:,0]
+        #target = torch.nn.functional.one_hot(target, 2).transpose(1, 4).squeeze(-1)
+        target = torch.reshape(target, [-1,960,960])
+        weights = [0.2,1]
+        class_weights = torch.FloatTensor(weights)
+        class_weights = class_weights.to(device)
+        criterion = torch.nn.CrossEntropyLoss(weight=class_weights,reduction='mean')
+        #return dice_loss(predicted, target)
+        return criterion(predicted, target)
